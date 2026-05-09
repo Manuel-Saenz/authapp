@@ -159,6 +159,7 @@
 
     .step-body h3 { margin: 0 0 6px; font-size: 0.95rem; }
     .step-body p  { margin: 0; font-size: 0.9rem; color: #555; }
+    .step-body p + p { margin-top: 8px; }
 
     /* ── Code ── */
     pre {
@@ -232,6 +233,12 @@
       color: #92400e;
     }
 
+    .callout.info {
+      border-left-color: #2563eb;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
     /* ── Interface cards ── */
     .card-row {
       display: grid;
@@ -261,14 +268,16 @@
     <li class="section"><a href="#getting-started">Getting Started</a></li>
     <li class="section"><a href="#browser-ui">Browser UI Guide</a></li>
     <li class="sub"><a href="#step-register">1. Register</a></li>
-    <li class="sub"><a href="#step-qr">2. Scan QR code</a></li>
-    <li class="sub"><a href="#step-confirm">3. Confirm setup</a></li>
-    <li class="sub"><a href="#step-login">4. Log in</a></li>
+    <li class="sub"><a href="#step-verify">2. Verify email</a></li>
+    <li class="sub"><a href="#step-qr">3. Scan QR code</a></li>
+    <li class="sub"><a href="#step-confirm">4. Confirm setup</a></li>
+    <li class="sub"><a href="#step-login">5. Log in</a></li>
     <li class="section"><a href="#api-guide">API Guide</a></li>
     <li class="sub"><a href="#api-register">Register</a></li>
     <li class="sub"><a href="#api-setup-confirm">Confirm TOTP</a></li>
     <li class="sub"><a href="#api-authenticate">Authenticate</a></li>
     <li class="section"><a href="#api-reference">API Reference</a></li>
+    <li class="section"><a href="#smtp">SMTP Configuration</a></li>
     <li class="section"><a href="#errors">Error Messages</a></li>
     <li class="section"><a href="#security">Security Rules</a></li>
     <li class="section"><a href="#troubleshooting">Troubleshooting</a></li>
@@ -286,7 +295,7 @@
   <p>The Auth Service verifies a user's identity using three factors:</p>
 
   <div class="badge-row">
-    <div class="badge"><strong>1</strong><span>Email address — your unique identifier</span></div>
+    <div class="badge"><strong>1</strong><span>Email address — verified during registration</span></div>
     <div class="badge"><strong>2</strong><span>Password — a secret only you know</span></div>
     <div class="badge"><strong>3</strong><span>One-time code — 6 digits from Google Authenticator</span></div>
   </div>
@@ -331,23 +340,34 @@ python -m uvicorn main:app --reload</code></pre>
       <div class="step-num">1</div>
       <div class="step-body">
         <h3>Register</h3>
-        <p>Open <code>http://localhost:8000/</code>. Enter your email address and a password, then click <strong>Register</strong>. The service creates your account and immediately displays a QR code.</p>
+        <p>Open <code>http://localhost:8000/</code> and fill in the registration form:</p>
+        <p>Enter your <strong>email address</strong>, then choose a <strong>password</strong>. Click the <strong>eye icon</strong> on the right of the password field to show or hide what you are typing. Enter the same password again in the <strong>Confirm password</strong> field — the form will alert you if they do not match before submitting.</p>
+        <p>Click <strong>Register</strong>. The service validates your inputs and sends a verification email to the address you provided.</p>
+      </div>
+    </div>
+
+    <div class="step" id="step-verify">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Verify your email</h3>
+        <p>Check your inbox for an email with the subject <strong>"Verify your email — AuthService"</strong> and click the link inside. The link is valid for <strong>30 minutes</strong>.</p>
+        <p>If it expires, go back to the registration page and register again to get a new link.</p>
       </div>
     </div>
 
     <div class="step" id="step-qr">
-      <div class="step-num">2</div>
+      <div class="step-num">3</div>
       <div class="step-body">
         <h3>Scan the QR code</h3>
-        <p>Open <strong>Google Authenticator</strong> on your phone. Tap <strong>+</strong> → <strong>Scan a QR code</strong> and point your camera at the QR code on screen. The app will immediately start showing a 6-digit code that refreshes every 30 seconds.</p>
-        <p style="margin-top: 10px;"><strong>Can't scan?</strong> Tap <strong>+</strong> → <strong>Enter a setup key</strong> instead. The QR code encodes a URI like:<br>
+        <p>After clicking the verification link, your browser shows a QR code. Open <strong>Google Authenticator</strong> on your phone. Tap <strong>+</strong> → <strong>Scan a QR code</strong> and point your camera at the QR code on screen. The app will immediately start showing a 6-digit code that refreshes every 30 seconds.</p>
+        <p><strong>Can't scan?</strong> Tap <strong>+</strong> → <strong>Enter a setup key</strong> instead. The QR code encodes a URI like:<br>
         <code>otpauth://totp/AuthService:you%40example.com?secret=<strong>YOURSECRET</strong>&amp;issuer=AuthService</code><br>
         Enter your email as the account name and the <code>secret</code> value as the key (type: Time-based).</p>
       </div>
     </div>
 
     <div class="step" id="step-confirm">
-      <div class="step-num">3</div>
+      <div class="step-num">4</div>
       <div class="step-body">
         <h3>Confirm setup</h3>
         <p>Click <strong>I've scanned it</strong> on the QR page. Enter the 6-digit code currently shown in Google Authenticator and click <strong>Confirm</strong>. A success message confirms your account is ready.</p>
@@ -355,10 +375,10 @@ python -m uvicorn main:app --reload</code></pre>
     </div>
 
     <div class="step" id="step-login">
-      <div class="step-num">4</div>
+      <div class="step-num">5</div>
       <div class="step-body">
         <h3>Log in</h3>
-        <p>Click <strong>Go to login</strong> or open <code>http://localhost:8000/ui/login</code>. Enter your email, password, and the current 6-digit code from Google Authenticator, then click <strong>Log in</strong>.</p>
+        <p>Click <strong>Go to login</strong> or open <code>http://localhost:8000/ui/login</code>. Enter your email, your password (use the eye icon to check what you typed), and the current 6-digit code from Google Authenticator, then click <strong>Log in</strong>.</p>
       </div>
     </div>
 
@@ -367,6 +387,7 @@ python -m uvicorn main:app --reload</code></pre>
   <!-- API Guide -->
   <h2 id="api-guide">API Guide</h2>
   <p>Use these endpoints via <code>http://localhost:8000/docs</code> (Swagger UI) or with curl.</p>
+  <div class="callout info">The JSON API does <strong>not</strong> require email verification — it returns the TOTP URI directly. Email verification applies only to the browser UI flow.</div>
 
   <h3 id="api-register">Register</h3>
   <pre><code>curl -X POST http://localhost:8000/register \
@@ -403,11 +424,12 @@ python -m uvicorn main:app --reload</code></pre>
   <table>
     <tr><th>Method</th><th>Path</th><th>Description</th></tr>
     <tr><td><code>GET</code></td><td><code>/</code></td><td>Registration form</td></tr>
-    <tr><td><code>POST</code></td><td><code>/ui/register</code></td><td>Create account — form fields: <code>email</code>, <code>password</code></td></tr>
+    <tr><td><code>POST</code></td><td><code>/ui/register</code></td><td>Submit registration — fields: <code>email</code>, <code>password</code>, <code>password2</code></td></tr>
+    <tr><td><code>GET</code></td><td><code>/ui/verify</code></td><td>Email verification — query param: <code>token</code></td></tr>
     <tr><td><code>GET</code></td><td><code>/ui/confirm</code></td><td>Confirm form — query param: <code>email</code></td></tr>
-    <tr><td><code>POST</code></td><td><code>/ui/confirm</code></td><td>Activate TOTP — form fields: <code>email</code>, <code>totp_code</code></td></tr>
+    <tr><td><code>POST</code></td><td><code>/ui/confirm</code></td><td>Activate TOTP — fields: <code>email</code>, <code>totp_code</code></td></tr>
     <tr><td><code>GET</code></td><td><code>/ui/login</code></td><td>Login form</td></tr>
-    <tr><td><code>POST</code></td><td><code>/ui/login</code></td><td>Authenticate — form fields: <code>email</code>, <code>password</code>, <code>totp_code</code></td></tr>
+    <tr><td><code>POST</code></td><td><code>/ui/login</code></td><td>Authenticate — fields: <code>email</code>, <code>password</code>, <code>totp_code</code></td></tr>
   </table>
 
   <h3>JSON API endpoints</h3>
@@ -452,6 +474,29 @@ python -m uvicorn main:app --reload</code></pre>
     <tr><td><code>"error"</code></td><td>One or more factors wrong, or account locked</td></tr>
   </table>
 
+  <!-- SMTP Configuration -->
+  <h2 id="smtp">SMTP Configuration</h2>
+  <p>Email verification requires an SMTP server. Set these environment variables on your server or in Railway's Variables panel:</p>
+
+  <table>
+    <tr><th>Variable</th><th>Example</th><th>Description</th></tr>
+    <tr><td><code>SMTP_HOST</code></td><td><code>smtp.gmail.com</code></td><td>SMTP server hostname</td></tr>
+    <tr><td><code>SMTP_PORT</code></td><td><code>587</code></td><td>SMTP port (587 = STARTTLS)</td></tr>
+    <tr><td><code>SMTP_USER</code></td><td><code>you@gmail.com</code></td><td>Login username</td></tr>
+    <tr><td><code>SMTP_PASSWORD</code></td><td><code>abcd efgh ijkl mnop</code></td><td>Login password — for Gmail use an App Password</td></tr>
+    <tr><td><code>SMTP_FROM</code></td><td><code>you@gmail.com</code></td><td>Sender address (defaults to <code>SMTP_USER</code>)</td></tr>
+  </table>
+
+  <h3>Using Gmail</h3>
+  <ol style="margin: 8px 0 16px 20px; color: #444; font-size: 0.9rem; line-height: 1.8;">
+    <li>In your Google Account go to <strong>Security → 2-Step Verification → App passwords</strong></li>
+    <li>Create a new app password (select "Mail" / "Other")</li>
+    <li>Copy the 16-character password and set it as <code>SMTP_PASSWORD</code></li>
+    <li>Set <code>SMTP_HOST=smtp.gmail.com</code> and <code>SMTP_PORT=587</code></li>
+  </ol>
+
+  <div class="callout info"><strong>Local development without SMTP:</strong> If <code>SMTP_HOST</code> and <code>SMTP_USER</code> are not set, the verification link is shown directly on the page after registration. No email is sent. This is intentional for local testing.</div>
+
   <!-- Error Messages -->
   <h2 id="errors">Error Messages</h2>
   <table>
@@ -459,11 +504,20 @@ python -m uvicorn main:app --reload</code></pre>
     <tr><td><code>Invalid credentials or OTP code</code></td><td>Email, password, or TOTP code is wrong. Intentionally vague to prevent enumeration.</td></tr>
     <tr><td><code>TOTP setup not completed</code></td><td>Account exists but the confirm step has not been done.</td></tr>
     <tr><td><code>Too many failed attempts. Try again in 15 minutes.</code></td><td>5 failed attempts within the last 15 minutes.</td></tr>
-    <tr><td><code>Email already registered</code></td><td>Returned by <code>/register</code> only.</td></tr>
+    <tr><td><code>Email already registered</code></td><td>Returned by <code>/register</code> (API) only.</td></tr>
+    <tr><td><code>Passwords do not match</code></td><td>Both password fields must be identical.</td></tr>
+    <tr><td><code>This verification link has expired or has already been used</code></td><td>Links are valid for 30 minutes and can only be clicked once.</td></tr>
+    <tr><td><code>Could not send the verification email</code></td><td>SMTP is configured but the send failed — check SMTP settings.</td></tr>
   </table>
 
   <!-- Security Rules -->
   <h2 id="security">Security Rules</h2>
+
+  <h3>Email must be verified</h3>
+  <p>Account creation in the browser UI is not complete until the user clicks the verification link sent to their email address.</p>
+
+  <h3>Verification links are single-use and expire</h3>
+  <p>Each link works exactly once and expires after 30 minutes. If the link expires, the user must register again.</p>
 
   <h3>Codes are single-use</h3>
   <p>Each 6-digit code works only once, even within the same 30-second window. A second attempt with the same code will fail.</p>
@@ -483,24 +537,32 @@ python -m uvicorn main:app --reload</code></pre>
   <!-- Troubleshooting -->
   <h2 id="troubleshooting">Troubleshooting</h2>
 
-  <h3>"Email not found" after just registering</h3>
-  <p>If your email contains a <code>+</code> character (e.g. <code>user+tag@example.com</code>), a URL encoding issue may corrupt it in the confirmation link. Navigate directly to:</p>
-  <pre><code>http://localhost:8000/ui/confirm?email=user%2Btag@example.com</code></pre>
-  <p>Replace <code>+</code> with <code>%2B</code> in the URL.</p>
+  <h3>"Passwords do not match" alert on the registration form</h3>
+  <p>Both password fields must contain exactly the same text. Use the <strong>eye icon</strong> on either field to reveal what you typed and check for typos.</p>
+
+  <h3>Verification email never arrives</h3>
+  <ul style="margin: 8px 0 16px 20px; color: #444; font-size: 0.9rem; line-height: 1.8;">
+    <li>Check your spam/junk folder</li>
+    <li>The link expires in 30 minutes — if you waited too long, register again</li>
+    <li>Ask the administrator to confirm that SMTP is correctly configured</li>
+  </ul>
+
+  <h3>"This verification link has expired or has already been used"</h3>
+  <p>Links are valid for 30 minutes and can only be clicked once. Go back to the registration page and register again to get a new link.</p>
 
   <h3>"Invalid credentials or OTP code" even though everything looks right</h3>
   <ul style="margin: 8px 0 16px 20px; color: #444; font-size: 0.9rem; line-height: 1.8;">
     <li>Use the code currently shown in Google Authenticator — codes expire every 30 seconds</li>
     <li>You may have already used that code — wait for the next one</li>
     <li>Check your phone's date and time are set to <strong>automatic / network time</strong></li>
-    <li>Check for extra spaces in your email or password</li>
+    <li>Check for extra spaces in your email or password — use the eye icon to verify the password field</li>
   </ul>
 
   <h3>"TOTP setup not completed"</h3>
   <p>Complete the confirm step at <code>http://localhost:8000/ui/confirm</code> using a valid code from Google Authenticator.</p>
 
   <h3>Lost access to Google Authenticator</h3>
-  <p>No self-service recovery exists. An administrator must delete the user record from <code>auth_app.db</code> to allow re-registration with the same email.</p>
+  <p>An administrator can reset your credentials from the admin panel. After a reset, you can register again with the same email address to set up a new TOTP entry.</p>
 
   <h3>Google Authenticator shows a code but it is always rejected</h3>
   <p>Your phone clock has drifted.</p>
