@@ -62,8 +62,15 @@ def send_verification_email(to_email: str, verify_url: str) -> None:
         f"If you did not request this, you can safely ignore this email."
     )
 
-    with smtplib.SMTP(smtp_host, smtp_port) as s:
-        s.ehlo()
-        s.starttls()
-        s.login(smtp_user, smtp_pass)
-        s.send_message(msg)
+    # Port 465 = implicit SSL; anything else = STARTTLS
+    if smtp_port == 465:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port) as s:
+            s.ehlo()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(msg)
+    else:
+        with smtplib.SMTP(smtp_host, smtp_port) as s:
+            s.ehlo()
+            s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(msg)
