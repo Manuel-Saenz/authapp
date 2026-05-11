@@ -49,6 +49,13 @@ _STYLE = """<style>
   input:focus { border-color: #111; }
   .btn-primary { display: block; margin-top: 24px; width: 100%; padding: 12px; background: #111; color: #fff; border: none; border-radius: 7px; font-size: 1rem; cursor: pointer; }
   .btn-primary:hover { background: #333; }
+  @media (max-width: 600px) {
+    .content { padding: 0 16px; margin: 24px auto; }
+    .login-wrap { margin: 40px auto; }
+    nav { padding: 12px 16px; }
+    .toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .table-wrap { overflow-x: auto; }
+  }
 </style>"""
 
 
@@ -56,6 +63,7 @@ def _page(title: str, body: str) -> str:
     return (
         "<!DOCTYPE html><html lang='en'><head>"
         "<meta charset='UTF-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{title} — Admin</title>"
         f"{_STYLE}"
         f"</head><body>{body}</body></html>"
@@ -222,7 +230,7 @@ def admin_dashboard(
         <a class="export-link" href="/admin/users/export.csv">&#8595; Export CSV</a>
       </div>
       {flash}
-      {table}
+      <div class="table-wrap">{table}</div>
     </div>
     """
     return _page("Admin — Users", body)

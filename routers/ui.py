@@ -45,6 +45,9 @@ _STYLE = """<style>
   .box-info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8;
                padding: 12px 14px; border-radius: 7px; margin-bottom: 20px; font-size: 0.9rem; }
   img.qr { display: block; margin: 24px auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+  @media (max-width: 480px) {
+    body { margin: 32px auto; }
+  }
   .pw-wrap { position: relative; display: block; }
   .pw-wrap input { padding-right: 44px; }
   .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
@@ -77,6 +80,7 @@ def _page(title: str, body: str) -> str:
     return (
         "<!DOCTYPE html><html lang='en'><head>"
         "<meta charset='UTF-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{title} — AuthService</title>"
         f"{_STYLE}"
         f"</head><body>{body}"
