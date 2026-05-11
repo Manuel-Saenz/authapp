@@ -86,6 +86,7 @@ def _send_via_resend(api_key: str, to_email: str, body_text: str) -> None:
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "User-Agent": "AuthService/1.0",
         },
         method="POST",
     )
