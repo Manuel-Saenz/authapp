@@ -89,9 +89,13 @@ def _send_via_resend(api_key: str, to_email: str, body_text: str) -> None:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        if resp.status not in (200, 201):
-            raise RuntimeError(f"Resend API returned {resp.status}")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status not in (200, 201):
+                raise RuntimeError(f"Resend API returned {resp.status}")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode(errors="replace")
+        raise RuntimeError(f"Resend API {exc.code}: {detail}") from exc
 
 
 def _send_via_smtp(smtp_host: str, smtp_user: str, to_email: str, body_text: str) -> None:
