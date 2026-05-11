@@ -13,8 +13,6 @@ from models import User
 
 router = APIRouter()
 
-# ── Eye icons (used as initial toggle button content) ─────────────────────────
-
 _EYE = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"'
     ' fill="none" stroke="currentColor" stroke-width="2"'
@@ -24,39 +22,81 @@ _EYE = (
 )
 
 _STYLE = """<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; max-width: 440px; margin: 72px auto; padding: 0 24px; color: #111; }
-  h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-  .sub { color: #666; margin-bottom: 28px; font-size: 0.95rem; }
-  label { display: block; font-size: 0.85rem; font-weight: 600; margin: 18px 0 5px; }
-  input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 1rem; outline: none; }
-  input:focus { border-color: #111; }
-  input[readonly] { background: #f5f5f5; color: #666; }
-  .btn { display: block; margin-top: 26px; width: 100%; padding: 12px; background: #111;
-         color: #fff; border: none; border-radius: 7px; font-size: 1rem; cursor: pointer;
-         text-align: center; text-decoration: none; }
-  .btn:hover { background: #333; }
-  .hint { margin-top: 18px; text-align: center; font-size: 0.85rem; color: #666; }
-  .hint a { color: #111; font-weight: 500; }
-  .box-error { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c;
-               padding: 12px 14px; border-radius: 7px; margin-bottom: 20px; font-size: 0.9rem; }
-  .box-ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d;
-               padding: 12px 14px; border-radius: 7px; margin-bottom: 20px; font-size: 0.9rem; }
-  .box-info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8;
-               padding: 12px 14px; border-radius: 7px; margin-bottom: 20px; font-size: 0.9rem; }
-  img.qr { display: block; margin: 24px auto; border: 1px solid #e5e7eb; border-radius: 10px; }
-  @media (max-width: 480px) {
-    body { margin: 32px auto; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, sans-serif;
+    background: #07071a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 60px 0 40px;
   }
+  /* ── Aurora blobs ── */
+  .blob { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; opacity: 0.72; }
+  .blob-1 { width: 560px; height: 560px; background: radial-gradient(circle, rgba(124,58,237,0.85), transparent 70%); top: -180px; left: -140px; animation: drift1 13s ease-in-out infinite alternate; }
+  .blob-2 { width: 480px; height: 480px; background: radial-gradient(circle, rgba(6,182,212,0.75), transparent 70%); bottom: -120px; right: -120px; animation: drift2 16s ease-in-out infinite alternate; }
+  .blob-3 { width: 360px; height: 360px; background: radial-gradient(circle, rgba(16,185,129,0.5), transparent 70%); top: 55%; left: 35%; animation: drift3 19s ease-in-out infinite alternate; }
+  @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,40px) scale(1.12); } }
+  @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-50px,-35px) scale(1.08); } }
+  @keyframes drift3 { from { transform: translate(0,0) scale(1); } to { transform: translate(45px,-55px) scale(0.9); } }
+  /* ── Card ── */
+  .card {
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.45);
+    border-radius: 22px;
+    padding: 40px;
+    width: 100%; max-width: 440px;
+    margin: 0 24px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  /* ── Typography ── */
+  h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #111; margin-bottom: 6px; }
+  .sub { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+  /* ── Form ── */
+  label { display: block; font-size: 0.82rem; font-weight: 600; margin: 16px 0 4px; color: #333; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; outline: none; background: #fff; }
+  input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+  input[readonly] { background: #f5f5f5; color: #666; }
+  /* ── Buttons ── */
+  .btn {
+    display: block; margin-top: 24px; width: 100%; padding: 12px;
+    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+    color: #fff; border: none; border-radius: 9px; font-size: 1rem;
+    font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; letter-spacing: 0.01em;
+  }
+  .btn:hover { opacity: 0.87; }
+  .hint { margin-top: 18px; text-align: center; font-size: 0.85rem; color: #666; }
+  .hint a { color: #7c3aed; font-weight: 600; }
+  /* ── Alert boxes ── */
+  .box-error { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+  .box-ok    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+  .box-info  { background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+  /* ── QR ── */
+  img.qr { display: block; margin: 20px auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+  /* ── Password show/hide ── */
   .pw-wrap { position: relative; display: block; }
   .pw-wrap input { padding-right: 44px; }
-  .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-               background: none; border: none; cursor: pointer; color: #888;
-               padding: 4px; line-height: 0; border-radius: 4px; }
-  .pw-toggle:hover { color: #111; }
+  .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #888; padding: 4px; line-height: 0; border-radius: 4px; }
+  .pw-toggle:hover { color: #7c3aed; }
+  /* ── Login box (register page) ── */
+  .login-box { margin-top: 18px; padding: 14px 18px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .login-box p { font-size: 0.875rem; color: #555; }
+  .btn-login { flex-shrink: 0; padding: 8px 20px; background: #fff; border: 1.5px solid #7c3aed; color: #7c3aed; border-radius: 7px; font-size: 0.875rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .btn-login:hover { background: #7c3aed; color: #fff; }
+  /* ── Footer ── */
+  .footer { position: fixed; bottom: 14px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.3); font-size: 0.73rem; z-index: 1; letter-spacing: 0.02em; }
+  .footer a { color: rgba(255,255,255,0.48); text-decoration: none; }
+  .footer a:hover { color: rgba(255,255,255,0.85); }
+  /* ── Responsive ── */
+  @media (max-width: 480px) { .card { padding: 28px 20px; margin: 0 16px; } body { padding: 48px 0 36px; } }
 </style>"""
 
-# Inline JS: password show/hide toggle + confirm-match check
 _PW_SCRIPT = """
 const _eOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const _eOff = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
@@ -75,6 +115,19 @@ function checkPw(form) {
 }
 """
 
+_FOOTER = (
+    "<div class='footer'>Built by "
+    "<strong style='color:rgba(255,255,255,0.5)'>Manuel Saenz</strong>"
+    " &nbsp;&middot;&nbsp; Assisted by "
+    "<a href='https://claude.ai/code'>Claude Code</a></div>"
+)
+
+_BLOBS = (
+    "<div class='blob blob-1'></div>"
+    "<div class='blob blob-2'></div>"
+    "<div class='blob blob-3'></div>"
+)
+
 
 def _page(title: str, body: str) -> str:
     return (
@@ -83,7 +136,10 @@ def _page(title: str, body: str) -> str:
         "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{title} — AuthService</title>"
         f"{_STYLE}"
-        f"</head><body>{body}"
+        f"</head><body>"
+        f"{_BLOBS}"
+        f"<div class='card'>{body}</div>"
+        f"{_FOOTER}"
         f"<script>{_PW_SCRIPT}</script>"
         "</body></html>"
     )
@@ -105,16 +161,19 @@ def _pw_field(fid: str, fname: str, label: str, autofocus: bool = False) -> str:
 @router.get("/", response_class=HTMLResponse)
 def register_form():
     body = (
-        '<h1>Create account</h1>'
-        '<p class="sub">Register with your email and a password.</p>'
-        '<form method="POST" action="/ui/register" onsubmit="return checkPw(this)">'
-        '<label for="email">Email</label>'
-        '<input id="email" type="email" name="email" required autofocus>'
+        "<h1>Create account</h1>"
+        "<p class='sub'>Register with your email and a password.</p>"
+        "<form method='POST' action='/ui/register' onsubmit='return checkPw(this)'>"
+        "<label for='email'>Email</label>"
+        "<input id='email' type='email' name='email' required autofocus>"
         + _pw_field("password", "password", "Password")
         + _pw_field("password2", "password2", "Confirm password")
-        + '<button class="btn" type="submit">Register</button>'
-        '</form>'
-        '<p class="hint">Already have an account? <a href="/ui/login">Log in</a></p>'
+        + "<button class='btn' type='submit'>Create account &rarr;</button>"
+        "</form>"
+        "<div class='login-box'>"
+        "<p>Already have an account?</p>"
+        "<a class='btn-login' href='/ui/login'>Log in &rarr;</a>"
+        "</div>"
     )
     return _page("Create account", body)
 
@@ -172,10 +231,10 @@ def ui_register(
         )
 
     body = (
-        '<h1>Check your email</h1>'
-        f'<p class="sub">We sent a verification link to <strong>{email}</strong>.</p>'
-        '<p class="sub">Click the link in the email to complete registration '
-        'and set up Google Authenticator. The link expires in 30 minutes.</p>'
+        "<h1>Check your email</h1>"
+        f"<p class='sub'>We sent a verification link to <strong>{email}</strong>.</p>"
+        "<p class='sub'>Click the link in the email to complete registration "
+        "and set up Google Authenticator. The link expires in 30 minutes.</p>"
         + dev_hint
     )
     return HTMLResponse(_page("Check your email", body), status_code=202)
@@ -231,12 +290,12 @@ def ui_verify(token: str = "", db: Session = Depends(get_db)):
     qr_b64 = base64.b64encode(security.generate_qr_png(totp_uri)).decode()
 
     body = (
-        '<h1>Scan this QR code</h1>'
-        f'<p class="sub">Email verified for <strong>{email}</strong>.</p>'
-        '<p class="sub">Open <strong>Google Authenticator</strong>, tap <strong>+</strong>'
-        ' &rarr; <strong>Scan a QR code</strong>, then point your camera below.</p>'
+        "<h1>Scan this QR code</h1>"
+        f"<p class='sub'>Email verified for <strong>{email}</strong>.</p>"
+        "<p class='sub'>Open <strong>Google Authenticator</strong>, tap <strong>+</strong>"
+        " &rarr; <strong>Scan a QR code</strong>, then point your camera below.</p>"
         f'<img class="qr" src="data:image/png;base64,{qr_b64}" width="240" height="240" alt="TOTP QR code">'
-        '<p class="sub">Once you see a 6-digit code in the app, click the button to finish setup.</p>'
+        "<p class='sub'>Once you see a 6-digit code in the app, click the button to finish setup.</p>"
         f'<a class="btn" href="/ui/confirm?email={quote(email)}">I\'ve scanned it &rarr;</a>'
     )
     return HTMLResponse(_page("Scan QR code", body))
@@ -295,11 +354,11 @@ def ui_confirm(
     db.commit()
 
     body = (
-        '<div class="box-ok">Setup complete!</div>'
-        '<h1>You\'re all set</h1>'
-        f'<p class="sub">Google Authenticator is linked to <strong>{email}</strong>. '
-        'You can now log in with your email, password, and the code from the app.</p>'
-        '<a class="btn" href="/ui/login">Go to login &rarr;</a>'
+        "<div class='box-ok'>Setup complete!</div>"
+        "<h1>You're all set</h1>"
+        f"<p class='sub'>Google Authenticator is linked to <strong>{email}</strong>. "
+        "You can now log in with your email, password, and the code from the app.</p>"
+        "<a class='btn' href='/ui/login'>Go to login &rarr;</a>"
     )
     return _page("Setup complete", body)
 
@@ -309,18 +368,18 @@ def ui_confirm(
 @router.get("/ui/login", response_class=HTMLResponse)
 def login_form():
     body = (
-        '<h1>Log in</h1>'
-        '<p class="sub">Enter your email, password, and the current code from Google Authenticator.</p>'
-        '<form method="POST" action="/ui/login">'
-        '<label for="email">Email</label>'
-        '<input id="email" type="email" name="email" required autofocus>'
+        "<h1>Log in</h1>"
+        "<p class='sub'>Enter your email, password, and the current code from Google Authenticator.</p>"
+        "<form method='POST' action='/ui/login'>"
+        "<label for='email'>Email</label>"
+        "<input id='email' type='email' name='email' required autofocus>"
         + _pw_field("password", "password", "Password")
-        + '<label for="code">6-digit code</label>'
-        '<input id="code" type="text" name="totp_code" inputmode="numeric"'
-        ' maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required>'
-        '<button class="btn" type="submit">Log in</button>'
-        '</form>'
-        '<p class="hint">No account yet? <a href="/">Register</a></p>'
+        + "<label for='code'>6-digit code</label>"
+        "<input id='code' type='text' name='totp_code' inputmode='numeric'"
+        " maxlength='6' pattern='[0-9]{6}' autocomplete='one-time-code' required>"
+        "<button class='btn' type='submit'>Log in</button>"
+        "</form>"
+        "<p class='hint'>No account yet? <a href='/'>Register</a></p>"
     )
     return _page("Log in", body)
 
@@ -382,9 +441,9 @@ def ui_login(
     rate_limit.clear_attempts(email)
 
     body = (
-        '<div class="box-ok">Authentication successful!</div>'
-        '<h1>Welcome</h1>'
-        f'<p class="sub">You are logged in as <strong>{email}</strong>.</p>'
-        '<a class="btn" href="/ui/login">Log in again</a>'
+        "<div class='box-ok'>Authentication successful!</div>"
+        "<h1>Welcome</h1>"
+        f"<p class='sub'>You are logged in as <strong>{email}</strong>.</p>"
+        "<a class='btn' href='/ui/login'>Log in again</a>"
     )
     return _page("Welcome", body)
