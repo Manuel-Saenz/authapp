@@ -277,7 +277,7 @@
     <li class="sub"><a href="#api-setup-confirm">Confirm TOTP</a></li>
     <li class="sub"><a href="#api-authenticate">Authenticate</a></li>
     <li class="section"><a href="#api-reference">API Reference</a></li>
-    <li class="section"><a href="#smtp">SMTP Configuration</a></li>
+    <li class="section"><a href="#smtp">Email Configuration</a></li>
     <li class="section"><a href="#errors">Error Messages</a></li>
     <li class="section"><a href="#security">Security Rules</a></li>
     <li class="section"><a href="#troubleshooting">Troubleshooting</a></li>
@@ -474,28 +474,29 @@ python -m uvicorn main:app --reload</code></pre>
     <tr><td><code>"error"</code></td><td>One or more factors wrong, or account locked</td></tr>
   </table>
 
-  <!-- SMTP Configuration -->
-  <h2 id="smtp">SMTP Configuration</h2>
-  <p>Email verification requires an SMTP server. Set these environment variables on your server or in Railway's Variables panel:</p>
+  <!-- Email Configuration -->
+  <h2 id="smtp">Email Configuration</h2>
+  <p>Email verification is sent via <strong>Resend</strong> (recommended for production) or SMTP (local dev fallback).</p>
+
+  <h3>Resend — production (Railway)</h3>
+  <p><a href="https://resend.com">Resend</a> uses an HTTP API that works on all cloud platforms. Set these two variables in Railway's Variables panel:</p>
 
   <table>
-    <tr><th>Variable</th><th>Example</th><th>Description</th></tr>
-    <tr><td><code>SMTP_HOST</code></td><td><code>smtp.gmail.com</code></td><td>SMTP server hostname</td></tr>
-    <tr><td><code>SMTP_PORT</code></td><td><code>587</code></td><td>SMTP port (587 = STARTTLS)</td></tr>
-    <tr><td><code>SMTP_USER</code></td><td><code>you@gmail.com</code></td><td>Login username</td></tr>
-    <tr><td><code>SMTP_PASSWORD</code></td><td><code>abcd efgh ijkl mnop</code></td><td>Login password — for Gmail use an App Password</td></tr>
-    <tr><td><code>SMTP_FROM</code></td><td><code>you@gmail.com</code></td><td>Sender address (defaults to <code>SMTP_USER</code>)</td></tr>
+    <tr><th>Variable</th><th>Value</th><th>Description</th></tr>
+    <tr><td><code>RESEND_API_KEY</code></td><td><code>re_xxxxxxxxxxxx</code></td><td>API key from resend.com dashboard</td></tr>
+    <tr><td><code>SMTP_FROM</code></td><td><code>noreply@yourdomain.com</code></td><td>Sender address — must be on a domain verified in Resend</td></tr>
   </table>
 
-  <h3>Using Gmail</h3>
+  <h3>Resend domain setup (one-time)</h3>
   <ol style="margin: 8px 0 16px 20px; color: #444; font-size: 0.9rem; line-height: 1.8;">
-    <li>In your Google Account go to <strong>Security → 2-Step Verification → App passwords</strong></li>
-    <li>Create a new app password (select "Mail" / "Other")</li>
-    <li>Copy the 16-character password and set it as <code>SMTP_PASSWORD</code></li>
-    <li>Set <code>SMTP_HOST=smtp.gmail.com</code> and <code>SMTP_PORT=587</code></li>
+    <li>Sign up at <a href="https://resend.com">resend.com</a> and go to <strong>Domains → Add Domain</strong></li>
+    <li>Add the DNS records Resend provides — three records across two subdomains (<code>resend._domainkey</code> and <code>send</code>)</li>
+    <li>Click <strong>Verify</strong> in Resend once the records have propagated (5–30 minutes)</li>
+    <li>Go to <strong>API Keys → Create API Key</strong> (Full access) and copy the key</li>
+    <li>Set <code>RESEND_API_KEY</code> in Railway and redeploy</li>
   </ol>
 
-  <div class="callout info"><strong>Local development without SMTP:</strong> If <code>SMTP_HOST</code> and <code>SMTP_USER</code> are not set, the verification link is shown directly on the page after registration. No email is sent. This is intentional for local testing.</div>
+  <div class="callout info"><strong>Local development:</strong> If neither <code>RESEND_API_KEY</code> nor <code>SMTP_HOST</code> is set, the verification link is shown directly on the page after registration. No email is sent. This is intentional for local testing.</div>
 
   <!-- Error Messages -->
   <h2 id="errors">Error Messages</h2>

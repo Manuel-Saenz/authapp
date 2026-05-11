@@ -265,28 +265,29 @@ Validates all three factors. Always returns HTTP `200`.
 
 ---
 
-## SMTP Configuration
+## Email Configuration
 
-Email verification requires an SMTP server. Set these environment variables:
+Email verification is sent via **Resend** (recommended for production) or SMTP (local dev fallback).
 
-| Variable | Example | Description |
-|----------|---------|-------------|
-| `SMTP_HOST` | `smtp.gmail.com` | SMTP server hostname |
-| `SMTP_PORT` | `587` | SMTP port (587 = STARTTLS) |
-| `SMTP_USER` | `you@gmail.com` | Login username |
-| `SMTP_PASSWORD` | `abcd efgh ijkl mnop` | Login password (Gmail: use an App Password) |
-| `SMTP_FROM` | `you@gmail.com` | Sender address (defaults to `SMTP_USER`) |
+### Resend — production (Railway)
 
-### Using Gmail
+[Resend](https://resend.com) uses an HTTP API that works on all cloud platforms. Set these two variables in Railway:
 
-1. In your Google Account go to **Security → 2-Step Verification → App passwords**
-2. Create a new app password (select "Mail" / "Other")
-3. Copy the 16-character password and set it as `SMTP_PASSWORD`
-4. Set `SMTP_HOST=smtp.gmail.com` and `SMTP_PORT=587`
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `RESEND_API_KEY` | `re_xxxxxxxxxxxx` | API key from resend.com dashboard |
+| `SMTP_FROM` | `noreply@yourdomain.com` | Sender address (must be on a domain verified in Resend) |
 
-### Local development without SMTP
+**Resend domain setup** (one-time):
+1. Sign up at [resend.com](https://resend.com) and go to **Domains → Add Domain**
+2. Add the DNS records Resend provides into your DNS host — three records across two subdomains (`resend._domainkey` and `send`)
+3. Click **Verify** in Resend once the records have propagated
+4. Create an API key under **API Keys → Create API Key** (Full access)
+5. Set `RESEND_API_KEY` in Railway and redeploy
 
-If `SMTP_HOST` and `SMTP_USER` are not set, the verification link is shown directly on the page after registration. No email is sent. This is intentional for local testing.
+### Local development without Resend
+
+If neither `RESEND_API_KEY` nor `SMTP_HOST` is set, the verification link is shown directly on the page after registration. No email is sent. This is intentional for local testing.
 
 ---
 
